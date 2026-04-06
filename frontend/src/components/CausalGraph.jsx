@@ -32,7 +32,7 @@ export default function CausalGraph({ appState }) {
       .attr('orient', 'auto')
       .append('path')
       .attr('d', 'M0,-5L10,0L0,5')
-      .attr('fill', 'var(--text-secondary)');
+      .attr('fill', '#a1a1aa');
 
     const nodes = JSON.parse(JSON.stringify(appState.graph.nodes || []));
     const links = JSON.parse(JSON.stringify(appState.graph.edges || []));
@@ -48,7 +48,7 @@ export default function CausalGraph({ appState }) {
       .selectAll('line')
       .data(links)
       .join('line')
-      .attr('stroke', 'var(--panel-border)')
+      .attr('stroke', '#e4e4e7')
       .attr('stroke-width', 2)
       .attr('marker-end', 'url(#arrowend)')
       .attr('stroke-dasharray', d => d.delay !== 'none' ? '5,5' : 'none');
@@ -61,15 +61,15 @@ export default function CausalGraph({ appState }) {
       .text(d => d.polarity)
       .attr('font-size', '14px')
       .attr('font-weight', 'bold')
-      .attr('fill', d => d.polarity === '+' ? 'var(--success)' : 'var(--danger)')
+      .attr('fill', d => d.polarity === '+' ? '#10b981' : '#ef4444')
       .attr('dy', -5);
 
     const categoryColors = {
-      state: '#58a6ff',
-      flow: '#3fb950',
-      decision: '#d29922',
-      external: '#8b949e',
-      outcome: '#f85149'
+      state: '#3b82f6',
+      flow: '#22c55e',
+      decision: '#eab308',
+      external: '#71717a',
+      outcome: '#ef4444'
     };
 
     // Nodes
@@ -79,6 +79,9 @@ export default function CausalGraph({ appState }) {
       .join('circle')
       .attr('r', 16)
       .attr('fill', d => categoryColors[d.category] || '#fff')
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 2)
+      .attr('filter', 'drop-shadow(0 1px 2px rgb(0 0 0 / 0.1))')
       .call(drag(simulation));
 
     // Node labels
@@ -88,7 +91,8 @@ export default function CausalGraph({ appState }) {
       .join('text')
       .text(d => d.label)
       .attr('font-size', '12px')
-      .attr('fill', 'var(--text-primary)')
+      .attr('font-weight', '500')
+      .attr('fill', '#3f3f46')
       .attr('dx', 20)
       .attr('dy', 5);
 
@@ -134,13 +138,13 @@ export default function CausalGraph({ appState }) {
 
   if (!appState.graph) {
     return (
-      <div className="view-container fade-in">
-        <div className="view-header">
-          <h1>Causal Loop Diagram</h1>
+      <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="mb-10">
+          <h1 className="text-4xl font-serif text-zinc-900 tracking-tight font-medium mb-3">Causal Loop Diagram</h1>
         </div>
-        <div className="glass-panel" style={{ textAlign: 'center', padding: '60px' }}>
+        <div className="bg-white border border-zinc-200 shadow-sm rounded-xl p-16 text-center text-zinc-500">
           <p>Extract a narrative first to see the Causal Loop Diagram.</p>
-          <button className="glass-button" style={{ marginTop: '16px' }} onClick={() => navigate('/')}>
+          <button className="mt-4 px-4 py-2 border border-zinc-200 rounded-md text-zinc-700 hover:bg-zinc-50 transition-colors" onClick={() => navigate('/')}>
             Go to Input
           </button>
         </div>
@@ -149,26 +153,26 @@ export default function CausalGraph({ appState }) {
   }
 
   return (
-    <div className="view-container fade-in">
-      <div className="view-header" style={{ display: 'flex', justifyContent: 'space-between' }}>
+    <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex justify-between items-end mb-10">
         <div>
-          <h1>Causal Loop Diagram</h1>
-          <p>Extracted variables: {appState.graph.nodes?.length} | Relationships: {appState.graph.edges?.length} | Feedback Loops: {appState.loops?.length}</p>
+          <h1 className="text-4xl font-serif text-zinc-900 tracking-tight font-medium mb-3">Causal Loop Diagram</h1>
+          <p className="text-zinc-500 font-normal">Extracted variables: {appState.graph.nodes?.length} | Relationships: {appState.graph.edges?.length} | Feedback Loops: {appState.loops?.length}</p>
         </div>
-        <button className="glass-button primary" onClick={() => navigate('/archetypes')}>
-          Find Archetypes <ArrowRight size={18} />
+        <button className="bg-zinc-900 text-white rounded-lg px-4 py-2 hover:bg-zinc-800 transition-colors shadow-sm flex items-center gap-2 text-sm font-medium" onClick={() => navigate('/archetypes')}>
+          Find Archetypes <ArrowRight size={16} />
         </button>
       </div>
 
-      <div className="glass-panel" style={{ padding: 0, overflow: 'hidden' }}>
+      <div className="bg-white border border-zinc-200 shadow-sm rounded-xl overflow-hidden p-0 relative">
         <svg ref={svgRef} style={{ width: '100%', height: '600px', display: 'block' }}></svg>
       </div>
       
-      <div style={{ display: 'flex', gap: '20px', marginTop: '16px', padding: '0 16px' }}>
-         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><span style={{width: 12, height: 12, borderRadius: '50%', backgroundColor: '#58a6ff'}}></span> State</div>
-         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><span style={{width: 12, height: 12, borderRadius: '50%', backgroundColor: '#3fb950'}}></span> Flow</div>
-         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><span style={{width: 12, height: 12, borderRadius: '50%', backgroundColor: '#d29922'}}></span> Decision</div>
-         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><span style={{width: 12, height: 12, borderRadius: '50%', backgroundColor: '#f85149'}}></span> Outcome</div>
+      <div className="flex gap-6 mt-6 px-4">
+         <div className="flex items-center gap-2 text-sm text-zinc-600"><span className="w-3 h-3 rounded-full bg-blue-500"></span> State</div>
+         <div className="flex items-center gap-2 text-sm text-zinc-600"><span className="w-3 h-3 rounded-full bg-green-500"></span> Flow</div>
+         <div className="flex items-center gap-2 text-sm text-zinc-600"><span className="w-3 h-3 rounded-full bg-yellow-500"></span> Decision</div>
+         <div className="flex items-center gap-2 text-sm text-zinc-600"><span className="w-3 h-3 rounded-full bg-red-500"></span> Outcome</div>
       </div>
     </div>
   );

@@ -27,73 +27,76 @@ export default function GameTheoryView({ appState, updateState }) {
 
   if (!appState.selectedMatch) {
     return (
-      <div className="view-container fade-in">
-        <div className="view-header"><h1>Game Theory Analysis</h1></div>
-        <div className="glass-panel"><p>Match archetypes first.</p></div>
+      <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="mb-10"><h1 className="text-4xl font-serif text-zinc-900 tracking-tight font-medium mb-3">Game Theory Analysis</h1></div>
+        <div className="bg-white border border-zinc-200 shadow-sm rounded-xl p-16 text-center text-zinc-500">
+          <p>Match archetypes first.</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="view-container fade-in">
-      <div className="view-header" style={{ display: 'flex', justifyContent: 'space-between' }}>
+    <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex justify-between items-end mb-10">
         <div>
-          <h1>Strategic Analysis</h1>
-          <p>Analyzing stakeholder equilibria for: <strong style={{textTransform: 'capitalize'}}>{appState.selectedMatch.archetype.replace(/_/g, ' ')}</strong></p>
+          <h1 className="text-4xl font-serif text-zinc-900 tracking-tight font-medium mb-3">Strategic Analysis</h1>
+          <p className="text-zinc-500 font-normal">Analyzing stakeholder equilibria for: <strong className="capitalize text-zinc-800">{appState.selectedMatch.archetype.replace(/_/g, ' ')}</strong></p>
         </div>
         {!appState.gameAnalysis && (
-          <button className="glass-button primary" onClick={handleAnalysis} disabled={loading}>
-            {loading ? <span className="loader"></span> : <ShieldAlert size={18} />} Compute Equilibria
+          <button className="bg-zinc-900 text-white rounded-lg px-5 py-2.5 hover:bg-zinc-800 transition-colors shadow-sm flex items-center gap-2 text-sm font-medium" onClick={handleAnalysis} disabled={loading}>
+            {loading ? <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></span> : <ShieldAlert size={16} />} 
+            {loading ? 'Evaluating...' : 'Compute Equilibria'}
           </button>
         )}
         {appState.gameAnalysis && (
-          <button className="glass-button primary" onClick={() => navigate('/cdsp')}>
-             Generate Formulation <ArrowRight size={18} />
+          <button className="bg-zinc-900 text-white rounded-lg px-5 py-2.5 hover:bg-zinc-800 transition-colors shadow-sm flex items-center gap-2 text-sm font-medium" onClick={() => navigate('/cdsp')}>
+             Generate Formulation <ArrowRight size={16} />
           </button>
         )}
       </div>
 
       {appState.gameAnalysis && (
-        <div className="dashboard-grid">
-          <div className="glass-panel">
-             <h3>Equilibria Results</h3>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="bg-white border border-zinc-200 shadow-sm rounded-xl p-8">
+             <h3 className="text-xl font-serif font-medium text-zinc-900 border-b border-zinc-100 pb-4 mb-6">Equilibria Results</h3>
              
-             <div style={{ marginTop: '24px' }}>
-                <div style={{ padding: '16px', background: 'rgba(248, 81, 73, 0.1)', borderLeft: '4px solid var(--danger)', marginBottom: '16px' }}>
-                   <h4 className="text-danger" style={{ margin: 0 }}>Worst Nash Equilibrium</h4>
-                   <p style={{ margin: '8px 0 0', fontSize: '0.9rem' }}>Stakeholders maximize local utility, accelerating resource degradation.</p>
+             <div className="flex flex-col gap-4">
+                <div className="border-l-4 border-red-500 bg-red-50 rounded-r-md p-5">
+                   <h4 className="text-red-700 font-semibold mb-2">Worst Nash Equilibrium</h4>
+                   <p className="text-sm text-red-900/80 leading-relaxed">Stakeholders maximize local utility, accelerating resource degradation.</p>
                 </div>
                 
-                <div style={{ padding: '16px', background: 'rgba(63, 185, 80, 0.1)', borderLeft: '4px solid var(--success)' }}>
-                   <h4 className="text-success" style={{ margin: 0 }}>Cooperative Solution</h4>
-                   <p style={{ margin: '8px 0 0', fontSize: '0.9rem' }}>Total welfare maximized via central coordination (cDSP target).</p>
+                <div className="border-l-4 border-green-500 bg-green-50 rounded-r-md p-5">
+                   <h4 className="text-green-700 font-semibold mb-2">Cooperative Solution</h4>
+                   <p className="text-sm text-green-900/80 leading-relaxed">Total welfare maximized via central coordination (cDSP target).</p>
                 </div>
              </div>
              
-             <div style={{ marginTop: '32px', textAlign: 'center' }}>
-                <div className="metric-label">Price of Anarchy (PoA)</div>
-                <div className="metric-value">{appState.gameAnalysis.price_of_anarchy === Infinity ? '∞' : appState.gameAnalysis.price_of_anarchy.toFixed(2)}</div>
-                <p style={{ fontSize: '0.85rem' }}>Ratio of cooperative welfare to worst Nash equilibrium.</p>
+             <div className="mt-8 text-center py-6 bg-zinc-50 border border-zinc-100 rounded-lg">
+                <div className="text-sm font-medium text-zinc-500 uppercase tracking-wider mb-2">Price of Anarchy (PoA)</div>
+                <div className="text-4xl font-serif text-zinc-900 font-medium mb-3">{appState.gameAnalysis.price_of_anarchy === Infinity ? '∞' : appState.gameAnalysis.price_of_anarchy.toFixed(2)}</div>
+                <p className="text-sm text-zinc-500">Ratio of cooperative welfare to worst Nash equilibrium.</p>
              </div>
           </div>
           
-          <div className="glass-panel">
-            <h3>Mechanism Design Interventions</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px' }}>
+          <div className="bg-white border border-zinc-200 shadow-sm rounded-xl p-8">
+            <h3 className="text-xl font-serif font-medium text-zinc-900 border-b border-zinc-100 pb-4 mb-6">Mechanism Design Interventions</h3>
+            <div className="flex flex-col gap-4">
               {appState.gameAnalysis.mechanisms?.map((mech, i) => (
-                <div key={i} style={{ padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                     <Lightbulb size={18} className="text-accent" />
-                     <h4 style={{ margin: 0 }}>{mech.name}</h4>
+                <div key={i} className="border border-zinc-100 bg-zinc-50 rounded-lg p-5 shadow-sm">
+                  <div className="flex items-center gap-2 mb-3">
+                     <Lightbulb size={18} className="text-indigo-500" />
+                     <h4 className="font-semibold text-zinc-900">{mech.name}</h4>
                   </div>
-                  <p style={{ fontSize: '0.9rem' }}>{mech.description}</p>
-                  <div style={{ marginTop: '12px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    <strong>Implementation:</strong> {mech.implementation}
+                  <p className="text-sm text-zinc-600 leading-relaxed">{mech.description}</p>
+                  <div className="mt-4 pt-4 border-t border-zinc-200 text-xs text-zinc-500 font-mono">
+                    <strong className="text-zinc-700 font-sans">Implementation:</strong> {mech.implementation}
                   </div>
                 </div>
               ))}
               {(!appState.gameAnalysis.mechanisms || appState.gameAnalysis.mechanisms.length === 0) && (
-                 <p>No specific mechanisms suggested for this archetype.</p>
+                 <p className="text-zinc-500 italic">No specific mechanisms suggested for this archetype.</p>
               )}
             </div>
           </div>

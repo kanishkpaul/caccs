@@ -62,45 +62,51 @@ export default function NarrativesLibrary() {
   };
 
   return (
-    <div className="view-container fade-in">
-      <div className="view-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex justify-between items-end mb-10">
         <div>
-          <h1>Narratives Library</h1>
-          <p>Repository of systemic architectures and causal domain definitions.</p>
+          <h1 className="text-4xl font-serif text-zinc-900 tracking-tight font-medium mb-3">Narratives Library</h1>
+          <p className="text-zinc-500 font-normal">A centralized repository of conceptual architectures and causal domain definitions.</p>
         </div>
-        <button className="glass-button primary" onClick={() => handleEdit({id: 'new', config: {}})}>
-          <Plus size={16} /> New Narrative
+        <button 
+          className="bg-zinc-900 text-white rounded-lg px-4 py-2 hover:bg-zinc-800 transition-colors shadow-sm flex items-center gap-2 text-sm font-medium" 
+          onClick={() => handleEdit({id: 'new', config: {}})}
+        >
+          <Plus size={16} /> New Framework
         </button>
       </div>
 
       {editingId ? (
-        <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <h3>{editingId === 'new' ? 'Create Narrative' : 'Edit Narrative'}</h3>
-          <input className="glass-input" placeholder="Title" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
-          <input className="glass-input" placeholder="Short Description" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
-          <textarea className="glass-input" placeholder="Raw Narrative Text..." rows={8} style={{resize: 'vertical'}} value={formData.narrative} onChange={e => setFormData({...formData, narrative: e.target.value})} />
-          <textarea className="glass-input" placeholder='Configuration (JSON format)' rows={4} style={{resize: 'vertical'}} value={JSON.stringify(formData.config, null, 2)} onChange={e => {
-            try {
-              setFormData({...formData, config: JSON.parse(e.target.value)});
-            } catch (err) {}
+        <div className="bg-white border border-zinc-200 shadow-sm rounded-xl p-8 flex flex-col gap-6">
+          <h3 className="text-xl font-serif text-zinc-800 font-medium border-b border-zinc-100 pb-4">{editingId === 'new' ? 'Draft New Narrative' : 'Refine Narrative'}</h3>
+          
+          <div className="grid grid-cols-2 gap-6">
+            <input className="w-full bg-zinc-50 border border-zinc-200 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-400" placeholder="Chronicle Title" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
+            <input className="w-full bg-zinc-50 border border-zinc-200 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-400" placeholder="Philosophical Premise (Short)" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
+          </div>
+          
+          <textarea className="w-full bg-zinc-50 border border-zinc-200 rounded-md p-4 text-sm font-mono leading-relaxed focus:outline-none focus:ring-1 focus:ring-zinc-400 resize-y" placeholder="Raw Ontological Narrative Text..." rows={8} value={formData.narrative} onChange={e => setFormData({...formData, narrative: e.target.value})} />
+          <textarea className="w-full bg-zinc-50 border border-zinc-200 rounded-md p-4 text-sm font-mono leading-relaxed focus:outline-none focus:ring-1 focus:ring-zinc-400 resize-y" placeholder='Configuration (JSON Dict)' rows={4} value={JSON.stringify(formData.config, null, 2)} onChange={e => {
+            try { setFormData({...formData, config: JSON.parse(e.target.value)}); } catch (err) {}
           }} />
-          <textarea className="glass-input" placeholder="Python State Update Function" rows={4} style={{resize: 'vertical'}} value={formData.state_update_fn} onChange={e => setFormData({...formData, state_update_fn: e.target.value})} />
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-            <button className="glass-button" onClick={() => setEditingId(null)}>Cancel</button>
-            <button className="glass-button primary" onClick={handleSave}><Save size={16}/> Save</button>
+          <textarea className="w-full bg-zinc-50 border border-zinc-200 rounded-md p-4 text-sm font-mono leading-relaxed focus:outline-none focus:ring-1 focus:ring-zinc-400 resize-y" placeholder="Python State Boundary Update Function" rows={4} value={formData.state_update_fn} onChange={e => setFormData({...formData, state_update_fn: e.target.value})} />
+          
+          <div className="flex gap-3 justify-end pt-4 border-t border-zinc-100">
+            <button className="px-5 py-2 hover:bg-zinc-100 text-zinc-600 rounded-lg text-sm font-medium transition-colors" onClick={() => setEditingId(null)}>Cancel</button>
+            <button className="px-5 py-2 bg-zinc-900 text-white rounded-lg text-sm font-medium hover:bg-zinc-800 transition-colors shadow-sm flex items-center gap-2" onClick={handleSave}><Save size={16}/> Save to Library</button>
           </div>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-          {loading ? <p>Loading library...</p> : narratives.map(n => (
-            <div key={n.id} className="glass-panel" style={{ padding: '20px', position: 'relative' }}>
-              <div style={{ position: 'absolute', top: '15px', right: '15px', display: 'flex', gap: '8px' }}>
-                <button className="glass-button" style={{ padding: '6px' }} onClick={() => handleEdit(n)}><Edit size={14}/></button>
-                <button className="glass-button" style={{ padding: '6px', color: '#ff6b6b' }} onClick={() => handleDelete(n.id)}><Trash2 size={14}/></button>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {loading ? <p className="text-zinc-400 text-sm italic">Accessing archives...</p> : narratives.map(n => (
+            <div key={n.id} className="group relative bg-white border border-zinc-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
+              <div className="absolute top-4 right-4 flex opacity-0 group-hover:opacity-100 transition-opacity gap-2">
+                <button className="p-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-600 rounded-md transition-colors" onClick={() => handleEdit(n)}><Edit size={14}/></button>
+                <button className="p-2 bg-red-50 hover:bg-red-100 text-red-500 rounded-md transition-colors" onClick={() => handleDelete(n.id)}><Trash2 size={14}/></button>
               </div>
-              <h3 style={{ marginTop: 0, marginBottom: '8px', color: '#e2e8f0', fontSize: '1.2rem'}}>{n.title}</h3>
-              <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '16px' }}>{n.description}</p>
-              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '6px', fontSize: '0.85rem', color: '#cbd5e1', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <h3 className="font-serif font-medium text-lg text-zinc-800 mb-2 pr-12">{n.title}</h3>
+              <p className="text-sm text-zinc-500 leading-relaxed mb-6">{n.description}</p>
+              <div className="bg-zinc-50 px-3 py-2 rounded border border-zinc-100 text-xs font-mono text-zinc-400 truncate">
                 {n.narrative}
               </div>
             </div>

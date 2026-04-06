@@ -56,123 +56,71 @@ export default function Chatbot({ appState }) {
     return (
       <button 
         onClick={() => setIsOpen(true)}
-        className="glass-button primary fade-in"
-        style={{
-          position: 'fixed',
-          bottom: '30px',
-          right: '30px',
-          borderRadius: '50%',
-          width: '60px',
-          height: '60px',
-          padding: 0,
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          boxShadow: '0 8px 32px rgba(88, 166, 255, 0.4)',
-          zIndex: 9999
-        }}
+        className="fixed bottom-8 right-8 w-14 h-14 bg-zinc-900 border border-zinc-700 text-white rounded-full flex justify-center items-center shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 z-50 animate-in fade-in zoom-in"
       >
-        <MessageSquare size={28} />
+        <MessageSquare size={22} />
       </button>
     );
   }
 
   return (
     <div 
-      className="glass-panel fade-in"
-      style={{
-        position: 'fixed',
-        bottom: isExpanded ? '0' : '30px',
-        right: isExpanded ? '0' : '30px',
-        width: isExpanded ? '100vw' : '400px',
-        height: isExpanded ? '100vh' : '600px',
-        maxHeight: '100vh',
-        zIndex: 9999,
-        display: 'flex',
-        flexDirection: 'column',
-        padding: '0',
-        borderRadius: isExpanded ? '0' : '16px',
-        overflow: 'hidden',
-        boxShadow: '0 12px 48px rgba(0,0,0,0.5)',
-        transition: 'all 0.3s ease'
-      }}
+      className={`fixed ${isExpanded ? 'inset-0 w-full h-full rounded-none' : 'bottom-8 right-8 w-96 h-[600px] rounded-2xl'} bg-white border border-zinc-200 shadow-2xl flex flex-col z-50 transition-all duration-300 overflow-hidden text-zinc-900`}
     >
-      <div style={{
-        padding: '16px',
-        borderBottom: '1px solid var(--panel-border)',
-        background: 'rgba(255,255,255,0.05)',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
-          <BrainCircuit className="text-accent" size={20} />
-          CACCS Assistant
+      <div className="px-5 py-4 border-b border-zinc-100 flex justify-between items-center bg-zinc-50">
+        <div className="flex items-center gap-2 font-serif font-semibold text-lg text-zinc-800">
+          <BrainCircuit className="text-zinc-500" size={20} />
+          Research Companion
         </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <button onClick={() => setIsExpanded(!isExpanded)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}>
-            {isExpanded ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+        <div className="flex gap-2">
+          <button onClick={() => setIsExpanded(!isExpanded)} className="text-zinc-400 hover:text-zinc-700 transition-colors p-1">
+            {isExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
           </button>
-          <button onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+          <button onClick={() => setIsOpen(false)} className="text-zinc-400 hover:text-zinc-700 transition-colors p-1">
             <X size={18} />
           </button>
         </div>
       </div>
 
-      <div style={{ flex: 1, padding: '16px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div className="flex-1 p-5 overflow-y-auto flex flex-col gap-4 bg-white font-sans">
         {messages.map((m, i) => (
-          <div key={i} style={{
-            alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
-            maxWidth: '85%',
-            background: m.role === 'user' ? 'var(--accent)' : 'rgba(22, 27, 34, 0.8)',
-            color: m.role === 'user' ? '#fff' : 'var(--text-primary)',
-            padding: '12px 16px',
-            borderRadius: '12px',
-            borderBottomRightRadius: m.role === 'user' ? '2px' : '12px',
-            borderBottomLeftRadius: m.role === 'model' ? '2px' : '12px',
-            border: m.role === 'model' ? '1px solid var(--panel-border)' : 'none',
-            fontSize: '0.95rem',
-            whiteSpace: 'pre-wrap'
-          }}>
+          <div key={i} className={`max-w-[85%] px-4 py-3 text-sm leading-relaxed ${
+            m.role === 'user' 
+              ? 'self-end bg-zinc-900 text-white rounded-2xl rounded-br-sm' 
+              : 'self-start bg-zinc-50 border border-zinc-100 text-zinc-800 rounded-2xl rounded-bl-sm shadow-sm'
+          }`}>
             {m.text}
           </div>
         ))}
         {loading && (
-          <div style={{
-            alignSelf: 'flex-start',
-            background: 'rgba(22, 27, 34, 0.8)',
-            padding: '12px 16px',
-            borderRadius: '12px',
-            borderBottomLeftRadius: '2px',
-            border: '1px solid var(--panel-border)'
-          }}>
-            <span className="loader" style={{ width: '16px', height: '16px', display: 'inline-block' }}></span>
+          <div className="self-start max-w-[85%] px-4 py-3 bg-zinc-50 border border-zinc-100 rounded-2xl rounded-bl-sm">
+            <span className="w-4 h-4 border-2 border-zinc-300 border-t-zinc-600 rounded-full animate-spin inline-block"></span>
           </div>
         )}
         <div ref={endOfMessagesRef} />
       </div>
 
-      <div style={{ padding: '16px', borderTop: '1px solid var(--panel-border)', background: 'rgba(255,255,255,0.02)' }}>
+      <div className="p-4 border-t border-zinc-100 bg-zinc-50">
         <form 
           onSubmit={e => { e.preventDefault(); handleSend(); }}
-          style={{ display: 'flex', gap: '8px' }}
+          className="flex gap-3"
         >
           <input
             type="text"
-            className="glass-input"
-            style={{ flex: 1, borderRadius: '24px' }}
-            placeholder="Ask about the causal graph, game theory, etc..."
+            className="flex-1 bg-white border border-zinc-200 rounded-full px-5 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-400 font-sans placeholder-zinc-400"
+            placeholder="Explore structural assumptions..."
             value={input}
             onChange={e => setInput(e.target.value)}
             disabled={loading}
           />
           <button 
             type="submit" 
-            className="glass-button primary" 
-            style={{ borderRadius: '50%', width: '44px', height: '44px', padding: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+            className={`w-11 h-11 rounded-full flex justify-center items-center transition-colors shadow-sm ${
+              !input.trim() || loading ? 'bg-zinc-200 text-zinc-400' : 'bg-zinc-900 text-white hover:bg-zinc-800'
+            }`}
             disabled={!input.trim() || loading}
           >
-            <Send size={18} />
+            <Send size={16} />
           </button>
         </form>
       </div>

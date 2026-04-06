@@ -28,41 +28,50 @@ function AppLayout() {
   };
 
   return (
-    <div className="app-container">
-      <aside className="sidebar">
-        <div className="sidebar-header">
-          <div className="sidebar-brand">
-            <Brain size={28} color="#58a6ff" />
-            <span>CACCS-AI</span>
+    <div className="flex h-screen bg-zinc-50 font-sans text-zinc-900 overflow-hidden">
+      {/* Sidebar */}
+      <aside className="w-64 border-r border-zinc-200 bg-white flex flex-col flex-shrink-0">
+        <div className="h-16 flex items-center px-6 border-b border-zinc-100">
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="Sunflower Logo" className="w-7 h-7 object-contain rounded-full shadow-sm" />
+            <span className="font-serif font-semibold text-lg tracking-tight text-zinc-800">Caccs AI</span>
           </div>
         </div>
-        <nav className="nav-menu">
-          <NavLink to="/" className={({isActive}) => isActive ? "nav-item active" : "nav-item"}>
-            <Code size={20} /> Narrative Input
-          </NavLink>
-          <NavLink to="/graph" className={({isActive}) => isActive ? "nav-item active" : "nav-item"}>
-            <Network size={20} /> Causal Graph
-          </NavLink>
-          <NavLink to="/archetypes" className={({isActive}) => isActive ? "nav-item active" : "nav-item"}>
-            <GitMerge size={20} /> Archetypes
-          </NavLink>
-          <NavLink to="/game-theory" className={({isActive}) => isActive ? "nav-item active" : "nav-item"}>
-            <GraduationCap size={20} /> Game Theory
-          </NavLink>
-          <NavLink to="/cdsp" className={({isActive}) => isActive ? "nav-item active" : "nav-item"}>
-            <Code size={20} /> cDSP Generator
-          </NavLink>
-          <NavLink to="/simulation" className={({isActive}) => isActive ? "nav-item active" : "nav-item"}>
-            <LineChart size={20} /> Simulation
-          </NavLink>
-          <div style={{ margin: '16px 0', borderBottom: '1px solid #1e293b' }}></div>
-          <NavLink to="/library" className={({isActive}) => isActive ? "nav-item active" : "nav-item"}>
-            <Library size={20} /> Narratives Library
+        
+        <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto w-full">
+          {[
+            { to: "/", icon: Code, label: "Narrative Input" },
+            { to: "/graph", icon: Network, label: "Causal Graph" },
+            { to: "/archetypes", icon: GitMerge, label: "Archetypes" },
+            { to: "/game-theory", icon: GraduationCap, label: "Game Theory" },
+            { to: "/cdsp", icon: Code, label: "cDSP Generator" },
+            { to: "/simulation", icon: LineChart, label: "Simulation" }
+          ].map((item) => (
+            <NavLink key={item.to} to={item.to} className={({isActive}) => 
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isActive ? "bg-zinc-100 text-zinc-900" : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900"
+              }`
+            }>
+              <item.icon size={18} className="shrink-0" />
+              <span>{item.label}</span>
+            </NavLink>
+          ))}
+          
+          <div className="my-4 h-px bg-zinc-200"></div>
+          
+          <NavLink to="/library" className={({isActive}) => 
+            `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              isActive ? "bg-zinc-100 text-zinc-900" : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900"
+            }`
+          }>
+            <Library size={18} className="shrink-0" />
+            <span>Narratives Library</span>
           </NavLink>
         </nav>
       </aside>
       
-      <main className="main-content fade-in">
+      {/* Main Content */}
+      <main className="flex-1 overflow-y-auto p-8 relative">
         <Routes>
           <Route path="/" element={<NarrativeInput appState={appState} updateState={updateState} />} />
           <Route path="/graph" element={<CausalGraph appState={appState} />} />

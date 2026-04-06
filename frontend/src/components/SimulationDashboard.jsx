@@ -41,9 +41,9 @@ new_state = { "battery_soh": new_soh, "battery_soc": 1.0, "usable_capacity": 200
 
   if (!appState.cdsp) {
     return (
-      <div className="view-container fade-in">
-        <div className="view-header"><h1>Simulation Dashboard</h1></div>
-        <div className="glass-panel"><p>Generate cDSP first.</p></div>
+      <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="mb-10"><h1 className="text-4xl font-serif text-zinc-900 tracking-tight font-medium mb-3">Simulation Dashboard</h1></div>
+        <div className="bg-white border border-zinc-200 shadow-sm rounded-xl p-16 text-center text-zinc-500"><p>Generate cDSP first.</p></div>
       </div>
     );
   }
@@ -66,31 +66,32 @@ new_state = { "battery_soh": new_soh, "battery_soc": 1.0, "usable_capacity": 200
   }
 
   return (
-    <div className="view-container fade-in">
-      <div className="view-header" style={{ display: 'flex', justifyContent: 'space-between' }}>
+    <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex justify-between items-end mb-10">
         <div>
-          <h1>Sandboxed Scipy Simulation</h1>
-          <p>Solving the cDSP array across a 30-day horizon dynamically incorporating state updates.</p>
+          <h1 className="text-4xl font-serif text-zinc-900 tracking-tight font-medium mb-3">Sandboxed Scipy Simulation</h1>
+          <p className="text-zinc-500 font-normal">Solving the cDSP array across a 30-day horizon dynamically incorporating state updates.</p>
         </div>
-        <button className="glass-button primary" onClick={handleSimulate} disabled={loading}>
-          {loading ? <span className="loader"></span> : <Play size={18} />} Run Simulation
+        <button className="bg-zinc-900 text-white rounded-lg px-5 py-2.5 hover:bg-zinc-800 transition-colors shadow-sm flex items-center gap-2 text-sm font-medium" onClick={handleSimulate} disabled={loading}>
+          {loading ? <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></span> : <Play size={16} />} 
+          {loading ? 'Simulating...' : 'Run Simulation'}
         </button>
       </div>
 
       {appState.simulationResults && (
         <>
-          <div className="dashboard-grid">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             {appState.simulationResults.map((res, i) => (
-              <div key={i} className="glass-panel" style={{ borderColor: res.policy === 'context_aware' ? 'var(--accent)' : 'var(--panel-border)' }}>
-                <h3 style={{ textTransform: 'capitalize' }}>{res.policy.replace('_', ' ')} Policy</h3>
-                <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <div className="metric-card">
-                     <span className="metric-label">Total Shortfall (Deviation)</span>
-                     <span className="metric-value">{res.metrics?.total_shortfall?.toFixed(2)}</span>
+              <div key={i} className={`bg-white border ${res.policy === 'context_aware' ? 'border-zinc-900 shadow-md' : 'border-zinc-200 shadow-sm'} rounded-xl p-8`}>
+                <h3 className="text-xl font-serif font-medium text-zinc-900 capitalize border-b border-zinc-100 pb-4 mb-6">{res.policy.replace('_', ' ')} Policy</h3>
+                <div className="flex flex-col gap-4">
+                  <div className="flex justify-between items-center p-4 bg-zinc-50 rounded-lg border border-zinc-100">
+                     <span className="text-sm font-medium text-zinc-500 uppercase tracking-wider">Total Shortfall</span>
+                     <span className="text-xl font-mono text-zinc-900">{res.metrics?.total_shortfall?.toFixed(2)}</span>
                   </div>
-                  <div className="metric-card">
-                     <span className="metric-label">Final Resource Health (SOH)</span>
-                     <span className={`metric-value ${res.metrics?.final_state?.battery_soh > 0.9 ? 'text-success' : 'text-danger'}`}>
+                  <div className="flex justify-between items-center p-4 bg-zinc-50 rounded-lg border border-zinc-100">
+                     <span className="text-sm font-medium text-zinc-500 uppercase tracking-wider">Final Health (SOH)</span>
+                     <span className={`text-xl font-mono ${res.metrics?.final_state?.battery_soh > 0.9 ? 'text-green-600' : 'text-red-600'}`}>
                        {res.metrics?.final_state?.battery_soh ? (res.metrics.final_state.battery_soh * 100).toFixed(1) + '%' : 'N/A'}
                      </span>
                   </div>
@@ -99,17 +100,17 @@ new_state = { "battery_soh": new_soh, "battery_soc": 1.0, "usable_capacity": 200
             ))}
           </div>
 
-          <div className="glass-panel" style={{ height: '400px', padding: '24px', marginTop: '24px' }}>
-             <h3>Battery State of Health Trajectory</h3>
-             <ResponsiveContainer width="100%" height="100%">
+          <div className="bg-white border border-zinc-200 shadow-sm rounded-xl p-8 h-[500px]">
+             <h3 className="text-xl font-serif font-medium text-zinc-900 mb-6">Resource Health Trajectory</h3>
+             <ResponsiveContainer width="100%" height="90%">
                <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                 <XAxis dataKey="day" stroke="var(--text-secondary)" />
-                 <YAxis domain={['auto', 'auto']} stroke="var(--text-secondary)" />
-                 <Tooltip contentStyle={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--panel-border)' }} />
-                 <Legend />
-                 <Line type="monotone" dataKey="baseline_soh" name="Baseline (Worst Nash)" stroke="var(--danger)" strokeWidth={3} dot={false} />
-                 <Line type="monotone" dataKey="context_aware_soh" name="CACCS Policy (Cooperative)" stroke="var(--success)" strokeWidth={3} dot={false} />
+                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f4f4f5" />
+                 <XAxis dataKey="day" stroke="#a1a1aa" tick={{fill: '#71717a', fontSize: 12}} tickLine={false} axisLine={false} />
+                 <YAxis domain={['auto', 'auto']} stroke="#a1a1aa" tick={{fill: '#71717a', fontSize: 12}} tickLine={false} axisLine={false} />
+                 <Tooltip contentStyle={{ backgroundColor: '#fff', borderColor: '#e4e4e7', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                 <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                 <Line type="monotone" dataKey="baseline_soh" name="Baseline (Worst Nash)" stroke="#ef4444" strokeWidth={3} dot={false} activeDot={{ r: 6 }} />
+                 <Line type="monotone" dataKey="context_aware_soh" name="CACCS Policy (Cooperative)" stroke="#10b981" strokeWidth={3} dot={false} activeDot={{ r: 6 }} />
                </LineChart>
              </ResponsiveContainer>
           </div>
