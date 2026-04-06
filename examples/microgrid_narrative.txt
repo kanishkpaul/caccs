@@ -1,0 +1,12 @@
+A rural community microgrid uses photovoltaic panels and a lithium-ion battery to 
+serve three groups: a health clinic (critical services), 50 households, and a 
+small market area (productive users). Daily solar generation varies between 200-400 
+kWh depending on weather. Total demand is typically 500-600 kWh/day, exceeding 
+solar supply. The operator uses battery storage (200 kWh capacity) to supplement 
+delivery and reduce shortfalls. However, aggressive battery cycling accelerates 
+degradation — each deep discharge reduces state of health by ~0.1-0.3%. After 
+30 days of aggressive use, battery capacity has dropped measurably. The health 
+clinic needs reliable power for refrigeration and equipment. Households need 
+evening power for lighting and cooking. The market needs daytime power for 
+commerce. The operator must decide daily how much energy goes to each group and 
+how much to discharge from the battery.

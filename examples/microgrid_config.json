@@ -1,0 +1,22 @@
+{
+    "horizon": 30,
+    "policies": ["baseline", "context_aware"],
+    "initial_state": {
+        "battery_soh": 1.0,
+        "battery_soc": 1.0,
+        "usable_capacity": 200
+    },
+    "external_schedule": [
+        {"pv_generation": 300, "demand_clinic": 100, "demand_households": 250, "demand_market": 150}
+    ],
+    "weight_scenarios": [
+        {"clinic": 0.5, "households": 0.3, "market": 0.2}
+    ],
+    "policy_constraints": {
+        "context_aware": {
+             "linear_constraints": [
+                  {"coeffs": [1], "rhs": 50}
+             ]
+        }
+    }
+}
