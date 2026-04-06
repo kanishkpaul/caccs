@@ -5,13 +5,23 @@ import { apiClient } from '../api/client';
 export default function Chatbot({ appState }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [messages, setMessages] = useState([
-    { role: 'model', text: 'Hi! I am your context-aware CACCS assistant. Ask me anything about your current session and causal graph!' }
-  ]);
+  const [messages, setMessages] = useState(() => {
+    const saved = localStorage.getItem('caccs_chat_history');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return [
+      { role: 'model', text: 'Hi Suramyaa. I am your research-thinking companion. Let\'s explore some patterns together.' }
+    ];
+  });
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   
   const endOfMessagesRef = useRef(null);
+
+  useEffect(() => {
+    localStorage.setItem('caccs_chat_history', JSON.stringify(messages));
+  }, [messages]);
 
   useEffect(() => {
     if (isOpen && endOfMessagesRef.current) {
