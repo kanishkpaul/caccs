@@ -41,6 +41,26 @@ export const apiClient = {
     return res.data;
   },
   
+  getLibrary: async () => {
+    const res = await api.get('/library/narratives');
+    return res.data;
+  },
+  
+  createLibraryEntry: async (entry) => {
+    const res = await api.post('/library/narratives', entry);
+    return res.data;
+  },
+
+  updateLibraryEntry: async (id, entry) => {
+    const res = await api.put(`/library/narratives/${id}`, entry);
+    return res.data;
+  },
+
+  deleteLibraryEntry: async (id) => {
+    const res = await api.delete(`/library/narratives/${id}`);
+    return res.data;
+  },
+  
   chat: async (prompt, history, context) => {
     const res = await api.post('/chat', { prompt, history, context });
     return res.data;

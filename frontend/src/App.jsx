@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, useNavigate } from 'react-router-dom';
-import { Brain, Network, GitMerge, GraduationCap, Code, LineChart } from 'lucide-react';
+import { Brain, Network, GitMerge, GraduationCap, Code, LineChart, Library } from 'lucide-react';
 import NarrativeInput from './components/NarrativeInput';
 import CausalGraph from './components/CausalGraph';
 import ArchetypeMatch from './components/ArchetypeMatch';
 import GameTheoryView from './components/GameTheoryView';
 import CDSPView from './components/CDSPView';
 import SimulationDashboard from './components/SimulationDashboard';
+import NarrativesLibrary from './components/NarrativesLibrary';
 import Chatbot from './components/Chatbot';
 
 function AppLayout() {
@@ -54,6 +55,10 @@ function AppLayout() {
           <NavLink to="/simulation" className={({isActive}) => isActive ? "nav-item active" : "nav-item"}>
             <LineChart size={20} /> Simulation
           </NavLink>
+          <div style={{ margin: '16px 0', borderBottom: '1px solid #1e293b' }}></div>
+          <NavLink to="/library" className={({isActive}) => isActive ? "nav-item active" : "nav-item"}>
+            <Library size={20} /> Narratives Library
+          </NavLink>
         </nav>
       </aside>
       
@@ -65,6 +70,7 @@ function AppLayout() {
           <Route path="/game-theory" element={<GameTheoryView appState={appState} updateState={updateState} />} />
           <Route path="/cdsp" element={<CDSPView appState={appState} updateState={updateState} />} />
           <Route path="/simulation" element={<SimulationDashboard appState={appState} updateState={updateState} />} />
+          <Route path="/library" element={<NarrativesLibrary />} />
         </Routes>
       </main>
       <Chatbot appState={appState} />

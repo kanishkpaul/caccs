@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.api.routes import router
+from backend.api.library import library_router
 
 app = FastAPI(title="CACCS-AI Engine", version="1.0.0")
 
@@ -13,6 +14,7 @@ app.add_middleware(
 )
 
 app.include_router(router, prefix="/api")
+app.include_router(library_router, prefix="/api/library")
 
 @app.get("/health")
 def health_check():

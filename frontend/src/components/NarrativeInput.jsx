@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../api/client';
-import { Brain, Play, Download } from 'lucide-react';
+import { Brain, Download } from 'lucide-react';
 
 export default function NarrativeInput({ appState, updateState }) {
   const [narrative, setNarrative] = useState(appState.narrative || '');
   const [loading, setLoading] = useState(false);
-  const [examples, setExamples] = useState({});
+  const [library, setLibrary] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch examples on mount
-    apiClient.getExamples().then(data => {
-      setExamples(data);
+    apiClient.getLibrary().then(data => {
+      setLibrary(data.narratives || []);
     }).catch(console.error);
   }, []);
 
@@ -27,8 +26,6 @@ export default function NarrativeInput({ appState, updateState }) {
       updateState('extraction', res.extraction);
       updateState('graph', res.graph);
       updateState('loops', res.loops);
-      
-      // Navigate to next step
       navigate('/graph');
     } catch (err) {
       console.error(err);
@@ -38,11 +35,14 @@ export default function NarrativeInput({ appState, updateState }) {
     }
   };
 
-  const loadExample = () => {
-    if (examples.microgrid?.narrative) {
-      setNarrative(examples.microgrid.narrative);
-      updateState('exampleConfig', examples.microgrid.config);
-      updateState('exampleStateUpdate', examples.microgrid.state_update_fn);
+  const loadFromLibrary = (e) => {
+    const id = e.target.value;
+    if (!id) return;
+    const item = library.find(n => n.id === id);
+    if (item) {
+      setNarrative(item.narrative || '');
+      updateState('exampleConfig', item.config || {});
+      updateState('exampleStateUpdate', item.state_update_fn || '');
     }
   };
 
@@ -56,9 +56,13 @@ export default function NarrativeInput({ appState, updateState }) {
       <div className="glass-panel" style={{ height: '500px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3>System Description</h3>
-          <button className="glass-button" onClick={loadExample} disabled={loading}>
-            <Download size={16} /> Load Microgrid Example
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Download size={16} color="#94a3b8" />
+            <select className="glass-input" style={{ width: '250px', padding: '6px 12px' }} onChange={loadFromLibrary} defaultValue="">
+              <option value="" disabled>Import Narrative...</option>
+              {library.map(n => <option key={n.id} value={n.id}>{n.title}</option>)}
+            </select>
+          </div>
         </div>
         
         <textarea
@@ -77,7 +81,7 @@ export default function NarrativeInput({ appState, updateState }) {
             disabled={!narrative.trim() || loading}
           >
             {loading ? <span className="loader"></span> : <Brain size={18} />}
-            {loading ? 'Processing via Gemini...' : 'Extract Causal Engine'}
+            {loading ? 'Processing via AI...' : 'Extract Causal Engine'}
           </button>
         </div>
       </div>
