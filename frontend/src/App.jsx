@@ -7,6 +7,7 @@ import ArchetypeMatch from './components/ArchetypeMatch';
 import GameTheoryView from './components/GameTheoryView';
 import CDSPView from './components/CDSPView';
 import SimulationDashboard from './components/SimulationDashboard';
+import Chatbot from './components/Chatbot';
 
 function AppLayout() {
   const [appState, setAppState] = useState({
@@ -66,6 +67,7 @@ function AppLayout() {
           <Route path="/simulation" element={<SimulationDashboard appState={appState} updateState={updateState} />} />
         </Routes>
       </main>
+      <Chatbot appState={appState} />
     </div>
   );
 }

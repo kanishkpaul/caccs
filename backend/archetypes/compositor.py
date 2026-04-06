@@ -1,9 +1,9 @@
 import json
 import networkx as nx
-from google import genai
-from backend.config import GEMINI_API_KEY, GEMINI_MODEL
+from openai import OpenAI
+from backend.config import OPENROUTER_API_KEY, OPENROUTER_MODEL
 
-client = genai.Client(api_key=GEMINI_API_KEY)
+client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_API_KEY)
 
 
 def detect_archetype_composition(
@@ -49,6 +49,7 @@ def detect_archetype_composition(
 def _classify_interaction(m1: dict, m2: dict, shared: set, G: nx.DiGraph) -> dict:
     """Classify how two archetypes interact through shared variables."""
     prompt = f"""
+    You are a systems dynamics expert.
     Two system archetypes share variables {list(shared)} in a causal system.
     Archetype 1: {m1.get('archetype', 'unknown')}
     Archetype 2: {m2.get('archetype', 'unknown')}
@@ -62,16 +63,16 @@ def _classify_interaction(m1: dict, m2: dict, shared: set, G: nx.DiGraph) -> dic
     Return JSON: {{"interaction": "...", "explanation": "...", "policy_implication": "..."}}
     """
     try:
-        config = genai.types.GenerateContentConfig(
-            system_instruction="You are a systems dynamics expert.",
-            temperature=0.2,
-            response_mime_type="application/json",
+        response = client.chat.completions.create(
+            model=OPENROUTER_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.2
         )
-        response = client.models.generate_content(
-            model=GEMINI_MODEL,
-            contents=prompt,
-            config=config,
-        )
-        return json.loads(response.text)
+        text = response.choices[0].message.content or "{}"
+        text = text.strip()
+        if text.startswith("```json"): text = text[7:]
+        elif text.startswith("```"): text = text[3:]
+        if text.endswith("```"): text = text[:-3]
+        return json.loads(text.strip())
     except Exception:
         return {"interaction": "unknown", "explanation": "Classification failed", "policy_implication": "Manual review needed"}

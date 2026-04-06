@@ -169,3 +169,48 @@ def get_examples():
             "state_update_fn": state_update
         }
     }
+
+class ChatRequest(BaseModel):
+    prompt: str
+    history: List[Dict[str, str]]
+    context: Dict[str, Any]
+
+@router.post("/chat")
+def chat_endpoint(req: ChatRequest):
+    from openai import OpenAI
+    from backend.config import OPENROUTER_API_KEY, OPENROUTER_MODEL
+    
+    client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_API_KEY)
+    
+    # Bundle the global context tightly
+    system_ctx = "You are the CACCS-AI assistant logic co-pilot. " \
+                 "The user is analyzing a system dynamics model via a web interface. " \
+                 "Answer their questions based on the current state provided in JSON below.\n\n" \
+                 "CURRENT UI CONTEXT AND DATA EXTRACTED:\n" + json.dumps(req.context, default=str)[:15000] # Cap size lightly
+                 
+    # Format history for Groq calls
+    messages = [{"role": "system", "content": system_ctx}]
+    
+    for msg in req.history:
+        messages.append({
+            "role": "user" if msg["role"] == "user" else "assistant",
+            "content": msg["text"]
+        })
+        
+    messages.append({
+        "role": "user",
+        "content": req.prompt
+    })
+
+    try:
+        response = client.chat.completions.create(
+            model=OPENROUTER_MODEL,
+            messages=messages,
+            temperature=0.4,
+        )
+        return {"response": response.choices[0].message.content}
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+

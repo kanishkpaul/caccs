@@ -1,8 +1,8 @@
 import json
-from google import genai
-from backend.config import GEMINI_API_KEY, GEMINI_MODEL
+from openai import OpenAI
+from backend.config import OPENROUTER_API_KEY, OPENROUTER_MODEL
 
-client = genai.Client(api_key=GEMINI_API_KEY)
+client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_API_KEY)
 
 EXTRACTION_SYSTEM_PROMPT = """
 You are a systems dynamics expert. Given a natural language description of a system,
@@ -23,85 +23,28 @@ Rules:
 4. Be exhaustive. Extract implicit relationships too.
 5. Normalize variable names to snake_case.
 
-Return ONLY valid JSON matching the schema below.
-"""
-
-EXTRACTION_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "variables": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "id": {"type": "string"},
-                    "label": {"type": "string"},
-                    "description": {"type": "string"},
-                    "category": {
-                        "type": "string",
-                        "enum": ["state", "flow", "decision", "external", "outcome"]
-                    }
-                },
-                "required": ["id", "label", "category"]
-            }
-        },
-        "relationships": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "source": {"type": "string"},
-                    "target": {"type": "string"},
-                    "polarity": {"type": "string", "enum": ["+", "-"]},
-                    "delay": {"type": "string", "enum": ["none", "short", "long"]},
-                    "confidence": {"type": "number"},
-                    "rationale": {"type": "string"}
-                },
-                "required": ["source", "target", "polarity", "delay", "confidence"]
-            }
-        },
-        "loops": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "name": {"type": "string"},
-                    "type": {"type": "string", "enum": ["reinforcing", "balancing"]},
-                    "variables": {"type": "array", "items": {"type": "string"}},
-                    "description": {"type": "string"}
-                },
-                "required": ["name", "type", "variables"]
-            }
-        },
-        "stakeholders": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "id": {"type": "string"},
-                    "label": {"type": "string"},
-                    "objectives": {"type": "array", "items": {"type": "string"}},
-                    "controlled_variables": {"type": "array", "items": {"type": "string"}}
-                },
-                "required": ["id", "label", "objectives"]
-            }
-        }
-    },
-    "required": ["variables", "relationships", "loops", "stakeholders"]
+Return ONLY valid JSON matching this schema structure:
+{
+  "variables": [{"id": "", "label": "", "description": "", "category": "state|flow|decision|external|outcome"}],
+  "relationships": [{"source": "", "target": "", "polarity": "+|-", "delay": "none|short|long", "confidence": 1.0, "rationale": ""}],
+  "loops": [{"name": "", "type": "reinforcing|balancing", "variables": [""], "description": ""}],
+  "stakeholders": [{"id": "", "label": "", "objectives": [""], "controlled_variables": [""]}]
 }
-
+"""
 
 def extract_causal_structure(narrative: str) -> dict:
     """Extract causal variables, relationships, loops, and stakeholders from narrative text."""
-    config = genai.types.GenerateContentConfig(
-        system_instruction=EXTRACTION_SYSTEM_PROMPT,
-        temperature=0.2,
-        response_mime_type="application/json",
-        response_schema=EXTRACTION_SCHEMA,
+    response = client.chat.completions.create(
+        model=OPENROUTER_MODEL,
+        messages=[
+            {"role": "system", "content": EXTRACTION_SYSTEM_PROMPT},
+            {"role": "user", "content": narrative}
+        ],
+        temperature=0.2
     )
-    response = client.models.generate_content(
-        model=GEMINI_MODEL,
-        contents=narrative,
-        config=config,
-    )
-    return json.loads(response.text)
+    text = response.choices[0].message.content or "{}"
+    text = text.strip()
+    if text.startswith("```json"): text = text[7:]
+    elif text.startswith("```"): text = text[3:]
+    if text.endswith("```"): text = text[:-3]
+    return json.loads(text.strip())

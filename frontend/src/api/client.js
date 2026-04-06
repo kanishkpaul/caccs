@@ -39,5 +39,10 @@ export const apiClient = {
   getExamples: async () => {
     const res = await api.get('/examples');
     return res.data;
+  },
+  
+  chat: async (prompt, history, context) => {
+    const res = await api.post('/chat', { prompt, history, context });
+    return res.data;
   }
 };

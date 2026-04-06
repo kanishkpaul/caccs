@@ -6,6 +6,20 @@ def match_archetypes(G: nx.DiGraph, loops: list[dict]) -> list[dict]:
     """Match detected loops against archetype templates. Returns ranked list."""
     matches = []
 
+    # Auto-detect has_delay from graph edges if missing
+    for l in loops:
+        if "has_delay" not in l:
+            has_delay = False
+            vars = l.get("variables", [])
+            for i in range(len(vars)):
+                u = vars[i]
+                v = vars[(i + 1) % len(vars)]
+                if G.has_edge(u, v):
+                    if G[u][v].get("delay") in ["short", "long"]:
+                        has_delay = True
+                        break
+            l["has_delay"] = has_delay
+
     for arch_name, arch in ARCHETYPE_TEMPLATES.items():
         required = arch["structure"]["required_loops"]
         score = 0.0
@@ -15,8 +29,8 @@ def match_archetypes(G: nx.DiGraph, loops: list[dict]) -> list[dict]:
         for req_loop in required:
             candidates = [
                 l for l in loops
-                if l["type"] == req_loop["type"]
-                and l["has_delay"] == req_loop["has_delay"]
+                if l.get("type", "").lower() == req_loop["type"].lower()
+                and l.get("has_delay", False) == req_loop.get("has_delay", False)
             ]
             if not candidates:
                 matched = False
