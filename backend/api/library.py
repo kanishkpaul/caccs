@@ -73,7 +73,7 @@ async def create_narrative(req: NarrativeEntry):
         db.add(new_entry)
         db.commit()
         db.refresh(new_entry)
-        print(f"--- DEBUG: SAVED NARRATIVE: {new_entry.title} (ID: {new_entry.id}) ---")
+        print(f"--- SUCCESS: Narrative saved: {new_entry.title} ({new_entry.id}) ---")
         return {
             "status": "success", 
             "narrative": {
@@ -86,8 +86,9 @@ async def create_narrative(req: NarrativeEntry):
             }
         }
     except Exception as e:
-        print(f"--- ERROR: FAILED TO SAVE NARRATIVE: {e} ---")
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"--- DATABASE ERROR (CREATE): {str(e)} ---")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database write failure: {str(e)}")
     finally:
         db.close()
 
@@ -106,7 +107,12 @@ async def update_narrative(n_id: str, req: NarrativeEntry):
         n.state_update_fn = req.state_update_fn
         
         db.commit()
+        print(f"--- SUCCESS: Narrative updated: {n_id} ---")
         return {"status": "success"}
+    except Exception as e:
+        print(f"--- DATABASE ERROR (UPDATE): {str(e)} ---")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database update failure: {str(e)}")
     finally:
         db.close()
 

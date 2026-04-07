@@ -1,7 +1,8 @@
 import axios from 'axios';
 
+const rawBase = import.meta.env.VITE_API_URL || '';
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api'
+  baseURL: rawBase.endsWith('/api') ? rawBase : `${rawBase.replace(/\/$/, '')}/api`
 });
 
 // Add a request interceptor to include the API key from localStorage
