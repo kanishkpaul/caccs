@@ -14,8 +14,11 @@ import LandingPage from './components/LandingPage';
 function AppLayout() {
   const getStoredKey = () => {
     const key = localStorage.getItem('OPENROUTER_API_KEY');
-    if (!key || key === 'null' || key === 'undefined') return null;
-    return key;
+    // Strict validation: Reject null, undefined, or very short/empty strings
+    if (!key || key.trim().length < 20 || key === 'null' || key === 'undefined') {
+      return null;
+    }
+    return key.trim();
   };
 
   const [apiKey, setApiKey] = useState(getStoredKey());
@@ -39,8 +42,10 @@ function AppLayout() {
     setApiKey(key);
   };
 
-  // If we don't have a valid key, force the user to the landing page
-  if (!apiKey || apiKey === 'null' || apiKey === 'undefined') {
+  // If we don't have a valid key (Strict check), force the user to the landing page
+  const isValidSession = apiKey && apiKey.trim().length >= 20 && apiKey !== 'null' && apiKey !== 'undefined';
+  
+  if (!isValidSession) {
     return (
       <Routes>
         <Route path="/landing" element={<LandingPage onInitialize={onInitialize} />} />
