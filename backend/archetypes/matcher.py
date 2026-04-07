@@ -27,23 +27,34 @@ def match_archetypes(G: nx.DiGraph, loops: list[dict]) -> list[dict]:
         matched = True
 
         for req_loop in required:
+            # SOFT MATCHING: Prioritize loop type, reward has_delay matches
             candidates = [
                 l for l in loops
                 if l.get("type", "").lower() == req_loop["type"].lower()
-                and l.get("has_delay", False) == req_loop.get("has_delay", False)
             ]
+            
             if not candidates:
                 matched = False
                 break
-            best = max(candidates, key=lambda l: sum(
-                G[l["variables"][i]][l["variables"][(i + 1) % len(l["variables"])]].get("confidence", 0.5)
-                for i in range(len(l["variables"]))
-                if G.has_edge(l["variables"][i], l["variables"][(i + 1) % len(l["variables"])])
-            ) / max(len(l["variables"]), 1))
-            mapping[req_loop["role"]] = best
-            score += 1.0 / len(required)
+            
+            # Sub-score each candidate: Type is base 1.0, matching delay adds 0.5
+            def score_candidate(l):
+                s = 1.0
+                if l.get("has_delay", False) == req_loop.get("has_delay", False):
+                    s += 0.5
+                return s
 
-        if not matched or score < 0.5:
+            best = max(candidates, key=score_candidate)
+            mapping[req_loop["role"]] = best
+            
+            # Assign partial credit if delay doesn't match
+            if best.get("has_delay", False) == req_loop.get("has_delay", False):
+                score += 1.0 / len(required)
+            else:
+                # Still a match, but lower confidence
+                score += 0.7 / len(required)
+
+        if not matched or score < 0.4:
             continue
 
         # Check shared variable constraint
