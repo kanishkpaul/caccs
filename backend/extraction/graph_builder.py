@@ -5,15 +5,16 @@ def build_causal_graph(extraction: dict) -> nx.DiGraph:
     """Build a signed directed graph from Gemini extraction."""
     G = nx.DiGraph()
 
-    for var in extraction["variables"]:
-        G.add_node(var["id"], label=var["label"], category=var["category"],
+    for var in extraction.get("variables", []):
+        G.add_node(var.get("id"), label=var.get("label", var.get("id")), 
+                   category=var.get("category", "variable"),
                    description=var.get("description", ""))
 
-    for rel in extraction["relationships"]:
-        G.add_edge(rel["source"], rel["target"],
-                   polarity=rel["polarity"],
-                   delay=rel["delay"],
-                   confidence=rel["confidence"],
+    for rel in extraction.get("relationships", []):
+        G.add_edge(rel.get("source"), rel.get("target"),
+                   polarity=rel.get("polarity", "+"),
+                   delay=rel.get("delay", "none"),
+                   confidence=rel.get("confidence", 1.0),
                    rationale=rel.get("rationale", ""))
 
     return G

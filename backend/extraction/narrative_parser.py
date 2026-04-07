@@ -42,9 +42,54 @@ def extract_causal_structure(narrative: str) -> dict:
         ],
         temperature=0.2
     )
-    text = response.choices[0].message.content or "{}"
-    text = text.strip()
-    if text.startswith("```json"): text = text[7:]
-    elif text.startswith("```"): text = text[3:]
-    if text.endswith("```"): text = text[:-3]
-    return json.loads(text.strip())
+    content = response.choices[0].message.content or "{}"
+    print(f"--- DEBUG: LLM RAW CONTENT ---\n{content[:1000]}...\n-----------------------------")
+    
+    # Advanced JSON extraction
+    def find_json_block(text):
+        # Try finding markdown code block first
+        import re
+        code_block = re.search(r'```(?:json)?\s*([\s\S]*?)```', text)
+        if code_block:
+            return code_block.group(1).strip()
+            
+        # Otherwise find first { or [ and match to matching last } or ]
+        start_idx = -1
+        for i, char in enumerate(text):
+            if char in '{[':
+                start_idx = i
+                break
+        
+        if start_idx == -1: return text
+        
+        # Simple balanced bracket finder
+        stack = []
+        opener = text[start_idx]
+        closer = '}' if opener == '{' else ']'
+        
+        for i in range(start_idx, len(text)):
+            if text[i] == opener:
+                stack.append(opener)
+            elif text[i] == closer:
+                if stack: stack.pop()
+                if not stack:
+                    return text[start_idx:i+1]
+        
+        return text[start_idx:]
+
+    cleaned_content = find_json_block(content)
+    
+    try:
+        return json.loads(cleaned_content)
+    except json.JSONDecodeError as e:
+        print(f"--- DEBUG: JSON DECODE ERROR: {e} ---")
+        # Final desperate attempt: remove any non-json characters before { and after }
+        import re
+        try:
+            fallback_match = re.search(r'(\{[\s\S]*\}|\[[\s\S]*\])', cleaned_content)
+            if fallback_match:
+                return json.loads(fallback_match.group(1))
+        except:
+            pass
+        return {"variables": [], "relationships": [], "loops": [], "stakeholders": []}
+

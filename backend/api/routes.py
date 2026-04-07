@@ -62,8 +62,10 @@ def dict_to_graph(graph_dict):
 @router.post("/extract")
 def extract(req: ExtractRequest):
     extraction = extract_causal_structure(req.narrative)
+    print(f"--- DEBUG: EXTRACTION KEYS: {extraction.keys() if isinstance(extraction, dict) else 'NOT A DICT'} ---")
     G = build_causal_graph(extraction)
     loops = detect_feedback_loops(G)
+    print(f"--- DEBUG: GRAPH NODES: {len(G.nodes())}, LOOPS: {len(loops)} ---")
     return {
         "extraction": extraction,
         "graph": graph_to_dict(G),

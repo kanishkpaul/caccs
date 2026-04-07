@@ -44,5 +44,13 @@
       }
     },
     "state_update_fn": "soh = state.get(\"battery_soh\", 1.0)\nsoc = state.get(\"battery_soc\", 1.0)\ncapacity = state.get(\"usable_capacity\", 200.0)\n\ndischarge = decision.get(\"battery_discharge\", 0)\npv_available = external.get(\"pv_generation\", 300)\n\ndepth_of_discharge = discharge / capacity if capacity > 0 else 0\ndegradation_rate = 0.002 * depth_of_discharge\nnew_soh = max(soh - degradation_rate, 0.0)\n\nnew_soc = max(soc - discharge / capacity, 0.0)\ntotal_allocated = sum(v for k, v in decision.items() if k.startswith(\"alloc_\"))\nexcess_pv = max(pv_available - total_allocated, 0)\nnew_soc = min(new_soc + excess_pv / capacity, 1.0)\n\nnew_capacity = 200 * new_soh\n\nnew_state = {\n    \"battery_soh\": new_soh,\n    \"battery_soc\": new_soc,\n    \"usable_capacity\": new_capacity\n}\n"
+  },
+  {
+    "id": "e6cea4c7-721d-448c-a3e2-728d30b84a5f",
+    "title": "something",
+    "description": "absurdism",
+    "narrative": "lets say solipsism is real",
+    "config": {},
+    "state_update_fn": ""
   }
 ]
