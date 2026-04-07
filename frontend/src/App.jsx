@@ -12,7 +12,13 @@ import Chatbot from './components/Chatbot';
 import LandingPage from './components/LandingPage';
 
 function AppLayout() {
-  const [apiKey, setApiKey] = useState(localStorage.getItem('OPENROUTER_API_KEY'));
+  const getStoredKey = () => {
+    const key = localStorage.getItem('OPENROUTER_API_KEY');
+    if (!key || key === 'null' || key === 'undefined') return null;
+    return key;
+  };
+
+  const [apiKey, setApiKey] = useState(getStoredKey());
   const [appState, setAppState] = useState({
     narrative: '',
     extraction: null,
@@ -33,7 +39,8 @@ function AppLayout() {
     setApiKey(key);
   };
 
-  if (!apiKey) {
+  // If we don't have a valid key, force the user to the landing page
+  if (!apiKey || apiKey === 'null' || apiKey === 'undefined') {
     return (
       <Routes>
         <Route path="/landing" element={<LandingPage onInitialize={onInitialize} />} />
