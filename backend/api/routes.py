@@ -1,6 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Header
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
+import networkx as nx
+import os
+import json
 
 from backend.extraction.narrative_parser import extract_causal_structure
 from backend.extraction.graph_builder import build_causal_graph, graph_to_dict
@@ -18,10 +21,6 @@ from backend.game_theory.price_of_anarchy import compute_price_of_anarchy
 
 from backend.cdsp.generator import generate_cdsp, generate_compound_cdsp
 from backend.simulation.engine import run_simulation, SimulationConfig
-
-import networkx as nx
-import os
-import json
 
 router = APIRouter()
 
@@ -60,8 +59,10 @@ def dict_to_graph(graph_dict):
     return G
 
 @router.post("/extract")
-def extract(req: ExtractRequest):
-    extraction = extract_causal_structure(req.narrative)
+def extract(req: ExtractRequest, x_openrouter_key: Optional[str] = Header(None)):
+    if not x_openrouter_key:
+        raise HTTPException(status_code=401, detail="API Key required")
+    extraction = extract_causal_structure(req.narrative, x_openrouter_key)
     print(f"--- DEBUG: EXTRACTION KEYS: {extraction.keys() if isinstance(extraction, dict) else 'NOT A DICT'} ---")
     G = build_causal_graph(extraction)
     loops = detect_feedback_loops(G)
@@ -73,7 +74,10 @@ def extract(req: ExtractRequest):
     }
 
 @router.post("/match-archetypes")
-def match(req: MatchRequest):
+def match(req: MatchRequest, x_openrouter_key: Optional[str] = Header(None)):
+    if not x_openrouter_key:
+        raise HTTPException(status_code=401, detail="API Key required")
+        
     G = dict_to_graph(req.graph)
     matches = match_archetypes(G, req.loops)
     
@@ -86,11 +90,12 @@ def match(req: MatchRequest):
                 cld_description=json.dumps(req.graph),
                 archetype_name=arch_name,
                 archetype_description=ARCHETYPE_TEMPLATES[arch_name].get("description", ""),
-                loop_mapping=match_cfg
+                loop_mapping=match_cfg,
+                api_key=x_openrouter_key
             )
             matches[0]["semantic_validation"] = validation
         
-    compositions = detect_archetype_composition(matches, G)
+    compositions = detect_archetype_composition(matches, G, x_openrouter_key)
     return {
         "matches": matches,
         "compositions": compositions
@@ -178,11 +183,14 @@ class ChatRequest(BaseModel):
     context: Dict[str, Any]
 
 @router.post("/chat")
-def chat_endpoint(req: ChatRequest):
+def chat_endpoint(req: ChatRequest, x_openrouter_key: Optional[str] = Header(None)):
+    if not x_openrouter_key:
+        raise HTTPException(status_code=401, detail="API Key required")
+        
     from openai import OpenAI
-    from backend.config import OPENROUTER_API_KEY, OPENROUTER_MODEL
+    from backend.config import DEFAULT_OPENROUTER_MODEL
     
-    client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_API_KEY)
+    client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=x_openrouter_key)
     
     # Custom persona for Suramyaa
     system_ctx = """You are a research-thinking companion for Suramyaa (Ankhi).
@@ -358,7 +366,7 @@ CURRENT RESEARCH DATA EXTRACTED:
 
     try:
         response = client.chat.completions.create(
-            model=OPENROUTER_MODEL,
+            model=DEFAULT_OPENROUTER_MODEL,
             messages=messages,
             temperature=0.4,
         )
@@ -367,4 +375,3 @@ CURRENT RESEARCH DATA EXTRACTED:
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
-

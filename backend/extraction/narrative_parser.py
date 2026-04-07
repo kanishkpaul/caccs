@@ -1,10 +1,12 @@
 import json
 from openai import OpenAI
-from backend.config import OPENROUTER_API_KEY, OPENROUTER_MODEL
 
-client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_API_KEY)
+def extract_causal_structure(narrative: str, api_key: str) -> dict:
+    """Extract causal variables, relationships, loops, and stakeholders from narrative text."""
+    from backend.config import DEFAULT_OPENROUTER_MODEL
+    client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
 
-EXTRACTION_SYSTEM_PROMPT = """
+    extraction_system_prompt = """
 You are a systems dynamics expert. Given a natural language description of a system,
 extract ALL causal variables and causal relationships.
 
@@ -32,12 +34,10 @@ Return ONLY valid JSON matching this schema structure:
 }
 """
 
-def extract_causal_structure(narrative: str) -> dict:
-    """Extract causal variables, relationships, loops, and stakeholders from narrative text."""
     response = client.chat.completions.create(
-        model=OPENROUTER_MODEL,
+        model=DEFAULT_OPENROUTER_MODEL,
         messages=[
-            {"role": "system", "content": EXTRACTION_SYSTEM_PROMPT},
+            {"role": "system", "content": extraction_system_prompt},
             {"role": "user", "content": narrative}
         ],
         temperature=0.2

@@ -7,10 +7,13 @@ export default function NarrativesLibrary() {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
   
+  const [saving, setSaving] = useState(false);
+  
   const [formData, setFormData] = useState({
     title: '', description: '', narrative: '',
     config: {}, state_update_fn: ''
   });
+  const [configString, setConfigString] = useState('{}');
 
   const loadData = async () => {
     setLoading(true);
@@ -28,26 +31,41 @@ export default function NarrativesLibrary() {
 
   const handleEdit = (n) => {
     setEditingId(n.id);
+    const cfg = n.config || {};
     setFormData({
       title: n.title || '',
       description: n.description || '',
       narrative: n.narrative || '',
-      config: n.config || {},
+      config: cfg,
       state_update_fn: n.state_update_fn || ''
     });
+    setConfigString(JSON.stringify(cfg, null, 2));
   };
 
   const handleSave = async () => {
+    let finalConfig = formData.config;
     try {
+      finalConfig = JSON.parse(configString);
+    } catch (err) {
+      alert("Invalid JSON configuration. Please fix it before saving.");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const dataToSave = { ...formData, config: finalConfig };
       if (editingId === 'new') {
-        await apiClient.createLibraryEntry(formData);
+        await apiClient.createLibraryEntry(dataToSave);
       } else {
-        await apiClient.updateLibraryEntry(editingId, formData);
+        await apiClient.updateLibraryEntry(editingId, dataToSave);
       }
+      alert("Changes saved to library successfully.");
       setEditingId(null);
       await loadData();
     } catch (e) {
       alert("Failed to save narrative.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -86,14 +104,19 @@ export default function NarrativesLibrary() {
           </div>
           
           <textarea className="w-full bg-zinc-50 border border-zinc-200 rounded-md p-4 text-sm font-mono leading-relaxed focus:outline-none focus:ring-1 focus:ring-zinc-400 resize-y" placeholder="Raw Ontological Narrative Text..." rows={8} value={formData.narrative} onChange={e => setFormData({...formData, narrative: e.target.value})} />
-          <textarea className="w-full bg-zinc-50 border border-zinc-200 rounded-md p-4 text-sm font-mono leading-relaxed focus:outline-none focus:ring-1 focus:ring-zinc-400 resize-y" placeholder='Configuration (JSON Dict)' rows={4} value={JSON.stringify(formData.config, null, 2)} onChange={e => {
-            try { setFormData({...formData, config: JSON.parse(e.target.value)}); } catch (err) {}
-          }} />
+          <textarea className="w-full bg-zinc-50 border border-zinc-200 rounded-md p-4 text-sm font-mono leading-relaxed focus:outline-none focus:ring-1 focus:ring-zinc-400 resize-y" placeholder='Configuration (JSON Dict)' rows={4} value={configString} onChange={e => setConfigString(e.target.value)} />
           <textarea className="w-full bg-zinc-50 border border-zinc-200 rounded-md p-4 text-sm font-mono leading-relaxed focus:outline-none focus:ring-1 focus:ring-zinc-400 resize-y" placeholder="Python State Boundary Update Function" rows={4} value={formData.state_update_fn} onChange={e => setFormData({...formData, state_update_fn: e.target.value})} />
           
           <div className="flex gap-3 justify-end pt-4 border-t border-zinc-100">
             <button className="px-5 py-2 hover:bg-zinc-100 text-zinc-600 rounded-lg text-sm font-medium transition-colors" onClick={() => setEditingId(null)}>Cancel</button>
-            <button className="px-5 py-2 bg-zinc-900 text-white rounded-lg text-sm font-medium hover:bg-zinc-800 transition-colors shadow-sm flex items-center gap-2" onClick={handleSave}><Save size={16}/> Save to Library</button>
+            <button 
+              className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2 ${saving ? 'bg-zinc-100 text-zinc-400 cursor-not-allowed' : 'bg-zinc-900 text-white hover:bg-zinc-800'}`} 
+              onClick={handleSave} 
+              disabled={saving}
+            >
+              {saving ? <span className="w-4 h-4 border-2 border-zinc-400/20 border-t-zinc-400 rounded-full animate-spin"></span> : <Save size={16}/>}
+              {saving ? 'Saving...' : 'Save to Library'}
+            </button>
           </div>
         </div>
       ) : (

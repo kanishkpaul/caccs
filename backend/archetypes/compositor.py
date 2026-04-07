@@ -1,14 +1,11 @@
 import json
 import networkx as nx
 from openai import OpenAI
-from backend.config import OPENROUTER_API_KEY, OPENROUTER_MODEL
-
-client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_API_KEY)
-
 
 def detect_archetype_composition(
     matches: list[dict],
-    causal_graph: nx.DiGraph
+    causal_graph: nx.DiGraph,
+    api_key: str
 ) -> list[dict]:
     """Detect when multiple archetypes share variables or loops, creating compound dynamics."""
     if len(matches) < 2:
@@ -32,7 +29,7 @@ def detect_archetype_composition(
 
             shared = vars_1 & vars_2
             if shared:
-                interaction = _classify_interaction(m1, m2, shared, causal_graph)
+                interaction = _classify_interaction(m1, m2, shared, causal_graph, api_key)
                 compositions.append({
                     "archetype_1": m1.get("archetype", "unknown"),
                     "archetype_2": m2.get("archetype", "unknown"),
@@ -46,8 +43,11 @@ def detect_archetype_composition(
     return compositions
 
 
-def _classify_interaction(m1: dict, m2: dict, shared: set, G: nx.DiGraph) -> dict:
+def _classify_interaction(m1: dict, m2: dict, shared: set, G: nx.DiGraph, api_key: str) -> dict:
     """Classify how two archetypes interact through shared variables."""
+    from backend.config import DEFAULT_OPENROUTER_MODEL
+    client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
+    
     prompt = f"""
     You are a systems dynamics expert.
     Two system archetypes share variables {list(shared)} in a causal system.
@@ -64,15 +64,20 @@ def _classify_interaction(m1: dict, m2: dict, shared: set, G: nx.DiGraph) -> dic
     """
     try:
         response = client.chat.completions.create(
-            model=OPENROUTER_MODEL,
+            model=DEFAULT_OPENROUTER_MODEL,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.2
         )
         text = response.choices[0].message.content or "{}"
         text = text.strip()
-        if text.startswith("```json"): text = text[7:]
-        elif text.startswith("```"): text = text[3:]
-        if text.endswith("```"): text = text[:-3]
+        
+        # Simple JSON extraction
+        import re
+        json_match = re.search(r'\{.*\}', text, re.DOTALL)
+        if json_match:
+            text = json_match.group(0)
+            
         return json.loads(text.strip())
-    except Exception:
+    except Exception as e:
+        print(f"--- DEBUG: COMPOSITOR INTERACTION CLASSIFICATION FAILED: {e} ---")
         return {"interaction": "unknown", "explanation": "Classification failed", "policy_implication": "Manual review needed"}

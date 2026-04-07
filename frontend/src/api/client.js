@@ -4,6 +4,17 @@ const api = axios.create({
   baseURL: '/api'
 });
 
+// Add a request interceptor to include the API key from localStorage
+api.interceptors.request.use((config) => {
+  const apiKey = localStorage.getItem('OPENROUTER_API_KEY');
+  if (apiKey) {
+    config.headers['X-OpenRouter-Key'] = apiKey;
+  }
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
+
 export const apiClient = {
   extract: async (narrative) => {
     const res = await api.post('/extract', { narrative });

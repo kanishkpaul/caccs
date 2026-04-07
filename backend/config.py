@@ -3,5 +3,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-OPENROUTER_API_KEY = "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"
-OPENROUTER_MODEL = "google/gemini-2.0-flash-001"
+# Database configuration (defaults to SQLite for easy setup)
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./caccs.db")
+
+# Fallback API values
+DEFAULT_OPENROUTER_MODEL = "google/gemini-2.0-flash-001"

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { BrowserRouter, Routes, Route, NavLink, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, NavLink, useNavigate, Navigate } from 'react-router-dom';
 import { Brain, Network, GitMerge, GraduationCap, Code, LineChart, Library } from 'lucide-react';
 import NarrativeInput from './components/NarrativeInput';
 import CausalGraph from './components/CausalGraph';
@@ -9,8 +9,10 @@ import CDSPView from './components/CDSPView';
 import SimulationDashboard from './components/SimulationDashboard';
 import NarrativesLibrary from './components/NarrativesLibrary';
 import Chatbot from './components/Chatbot';
+import LandingPage from './components/LandingPage';
 
 function AppLayout() {
+  const [apiKey, setApiKey] = useState(localStorage.getItem('OPENROUTER_API_KEY'));
   const [appState, setAppState] = useState({
     narrative: '',
     extraction: null,
@@ -26,6 +28,19 @@ function AppLayout() {
   const updateState = (key, value) => {
     setAppState(prev => ({ ...prev, [key]: value }));
   };
+
+  const onInitialize = (key) => {
+    setApiKey(key);
+  };
+
+  if (!apiKey) {
+    return (
+      <Routes>
+        <Route path="/landing" element={<LandingPage onInitialize={onInitialize} />} />
+        <Route path="*" element={<Navigate to="/landing" replace />} />
+      </Routes>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-zinc-50 font-sans text-zinc-900 overflow-hidden">
@@ -67,6 +82,15 @@ function AppLayout() {
             <Library size={18} className="shrink-0" />
             <span>Narratives Library</span>
           </NavLink>
+
+          <div className="mt-auto pt-4 border-t border-zinc-100">
+            <button 
+              onClick={() => { localStorage.removeItem('OPENROUTER_API_KEY'); setApiKey(null); }}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold text-zinc-400 hover:text-red-500 transition-colors w-full uppercase tracking-tighter"
+            >
+              Reset System
+            </button>
+          </div>
         </nav>
       </aside>
       
@@ -80,6 +104,7 @@ function AppLayout() {
           <Route path="/cdsp" element={<CDSPView appState={appState} updateState={updateState} />} />
           <Route path="/simulation" element={<SimulationDashboard appState={appState} updateState={updateState} />} />
           <Route path="/library" element={<NarrativesLibrary />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
       <Chatbot appState={appState} />
